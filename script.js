@@ -1,108 +1,86 @@
 'use strict'
 
 // activePlayer false or true <=> player1 or player 2
-let activePlayer = false
-let currentScore = 0
-let heldScore0 = 0
-let heldScore1 = 0
-let win = false
+let activePlayer = 0,
+  inactivePlayer = 1,
+  currentScore = 0,
+  heldScores = [0, 0],
+  win = false
 
 // selecting elements
-const name0El = document.getElementById('name--0')
-const name1El = document.getElementById('name--1')
-const score0El = document.querySelector('#score--0')
-const score1El = document.getElementById('score--1')
-const currentScore0El = document.getElementById('current--0')
-const currentScore1El = document.getElementById('current--1')
+const player0El = document.querySelector('.player--0')
+const player1El = document.querySelector('.player--1')
+let activePlayerScoreEl
+let activePlayerCurrentEl = document.getElementById(`current--${activePlayer}`)
 const diceEl = document.querySelector('.dice')
 const btnNew = document.querySelector('.btn--new')
 const btnRoll = document.querySelector('.btn--roll')
 const btnHold = document.querySelector('.btn--hold')
-let activePlayerNameEl = name0El
-let activePlayerScoreEl = score0El
-let activePlayerCurrentEl = currentScore0El
 
-setCurrentPlayer()
+resetGame()
 
-// starting conditions
-score0El.textContent = 0
-score1El.textContent = 0
-diceEl.classList.add('hidden')
+function resetGame() {
+  activePlayerCurrentEl.textContent = 0
+  activePlayer = 0
+  inactivePlayer = 1
+  currentScore = 0
+  heldScores = [0, 0]
+  displayHeldScores()
+  win = false
+  diceEl.classList.add('hidden')
+  btnRoll.classList.remove('hidden'), btnHold.classList.remove('hidden')
+  player0El.classList.add('player--active')
+  player1El.classList.remove('player--active')
+}
+
+function displayHeldScores() {
+  const heldScoreEls = document.querySelectorAll('.score')
+  console.log(heldScoreEls)
+  console.log(heldScores)
+  for (let i = 0; i < heldScores.length; i++)
+    heldScoreEls[i].textContent = heldScores[i]
+}
 
 // Dealing with when player clicks to roll
 btnRoll.addEventListener('click', function () {
-  let activeHeldScore = activePlayer === false ? heldScore0 : heldScore1
-  // 1. Generate a random dice roll between 1 and 6
   let diceRoll = Math.floor(Math.random() * 6) + 1
-  console.log(diceRoll)
-  // 2. Display dice
-  switch (diceRoll) {
-    case 1:
-      diceEl.src = 'dice-1.png'
-      currentScore = 0
-      break
-    case 2:
-      diceEl.src = 'dice-2.png'
-      currentScore += 2
-      break
-    case 3:
-      diceEl.src = 'dice-3.png'
-      currentScore += 3
-      break
-    case 4:
-      diceEl.src = 'dice-4.png'
-      currentScore += 4
-      break
-    case 5:
-      diceEl.src = 'dice-5.png'
-      currentScore += 5
-      break
-    case 6:
-      diceEl.src = 'dice-6.png'
-      currentScore += 6
-      break
-    default:
-  }
+  if (diceRoll === 1) currentScore = 0
+  else currentScore += diceRoll
+  diceEl.src = `dice-${diceRoll}.png`
   diceEl.classList.remove('hidden')
   activePlayerCurrentEl.textContent = currentScore
-  // 3. Check for win
-  if (currentScore + activeHeldScore >= 100) {
-    win = true
-  }
-  // 4. Check for rolled 1: if true, switch to next player
+  // Check for rolled 1: if true, switch to next player
   if (diceRoll === 1) {
-    activePlayer = !activePlayer
-    setCurrentPlayer()
+    toggleActivePlayer()
   }
-  console.log(activePlayer)
 })
 
 // Dealing with when player clicks to hold their current score
-btnHold.addEventListener('click', function () {})
-// TODO
+btnHold.addEventListener('click', function () {
+  heldScores[activePlayer] += currentScore
+  currentScore = 0
+  activePlayerCurrentEl.textContent = currentScore
+  displayHeldScores()
+  if (heldScores[activePlayer] >= 100) {
+    win = true
+    btnRoll.classList.add('hidden'), btnHold.classList.add('hidden')
+    activePlayerCurrentEl = document.querySelector(`.player--${activePlayer}`)
+    activePlayerCurrentEl.classList.add('player--winner')
+    // if there isn't a win, switch to next player
+  } else {
+    toggleActivePlayer()
+  }
+})
 
 // Dealing with when player clicks to start a new game
-btnNew.addEventListener('click', function () {})
-// TODO
+btnNew.addEventListener('click', function () {
+  resetGame()
+})
 
-function setCurrentPlayer() {
+function toggleActivePlayer() {
+  ;[activePlayer, inactivePlayer] = [inactivePlayer, activePlayer]
   // Remove currently active class from previously active player
-  activePlayerNameEl.classList.remove('player--active')
-  activePlayerScoreEl.classList.remove('player--active')
-  activePlayerCurrentEl.classList.remove('player--active')
-  // Check for current player and set their elements as the active ones
-  if (activePlayer === false) {
-    activePlayerNameEl = name0El
-    activePlayerScoreEl = score0El
-    activePlayerCurrentEl = currentScore0El
-  }
-  if (activePlayer === true) {
-    activePlayerNameEl = name1El
-    activePlayerScoreEl = score1El
-    activePlayerCurrentEl = currentScore1El
-  }
-  // Add active classes to the resulting active player elements
-  activePlayerNameEl.classList.add('player--active')
-  activePlayerScoreEl.classList.add('player--active')
-  activePlayerCurrentEl.classList.add('player--active')
+  player0El.classList.toggle('player--active')
+  player1El.classList.toggle('player--active')
+  activePlayerCurrentEl = document.getElementById(`current--${activePlayer}`)
 }
