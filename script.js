@@ -30,7 +30,8 @@ function resetGame() {
   diceEl.classList.add('hidden')
   btnRoll.classList.remove('hidden'), btnHold.classList.remove('hidden')
   player0El.classList.add('player--active')
-  player1El.classList.remove('player--active')
+  player0El.classList.remove('player--winner')
+  player1El.classList.remove('player--active', 'player--winner')
 }
 
 function displayHeldScores() {
@@ -63,6 +64,7 @@ btnHold.addEventListener('click', function () {
   displayHeldScores()
   if (heldScores[activePlayer] >= 100) {
     win = true
+    diceEl.classList.add('hidden')
     btnRoll.classList.add('hidden'), btnHold.classList.add('hidden')
     activePlayerCurrentEl = document.querySelector(`.player--${activePlayer}`)
     activePlayerCurrentEl.classList.add('player--winner')
